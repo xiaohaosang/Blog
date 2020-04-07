@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% from 'bootstrap/pagination.html' import render_pagination %}
+
+{% block title %}Manage Article{% endblock %}
+
+{% block content %}
+{% include 'user/manage_header.html' %}
+<div class="page-header">
+    <h1>Article
+        <small class="text-muted">{{ pagination.total }}</small>
+        <span class="float-right"><a class="btn btn-primary btn-sm"
+                                     href="{{ url_for('user.new_article',username=current_user.username) }}">New Article</a></span>
+    </h1>
+</div>
+{% if articles %}
+<table class="table table-striped">
+    <thead>
+    <tr>
+        <th>No.</th>
+        <th>Title</th>
+        <th>Date</th>
+        <th>Comments</th>
+        <th>Words</th>
+        <th>Actions</th>
+    </tr>
+    </thead>
+    {% for article in articles %}
+    <tr>
+        <td>{{ loop.index + ((page - 1) * config.BLOG_MANAGE_ARTICLE_PER_PAGE) }}</td>
+        <td><a href="{{ url_for('main.show_article', article_id=article.id) }}">{{ article.title }}</a></td>
+        <td>{{ moment(article.timestamp).format('LL') }}</td>
+        <td><a href="{{ url_for('main.show_article', article_id=article.id) }}#comments">{{ article.comments|length }}</a></td>
+        <td>{{ article.body|length }}</td>
+        <td>
+            <form class="inline" method="post"
+                  action="{{ url_for('main.set_comment', article_id=article.id, next=request.full_path) }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                <button type="submit" class="btn btn-warning btn-sm">
+                    {% if article.can_comment %}Disable{% else %}Enable{% endif %} Comment
+                </button>
+            </form>
+            <a class="btn btn-info btn-sm" href="{{ url_for('.edit_article', username=current_user.username,article_id=article.id) }}">Edit</a>
+            <form class="inline" method="post"
+                  action="{{ url_for('.delete_article', article_id=article.id, username=current_user.username, next=request.full_path) }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure?');">Delete
+                </button>
+            </form>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+<div class="page-footer">{{ render_pagination(pagination) }}</div>
+{% else %}
+<div class="tip"><h5>No articles.</h5></div>
+{% endif %}
+{% endblock %}

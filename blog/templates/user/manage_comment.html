@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% from 'bootstrap/pagination.html' import render_pagination %}
+
+{% block title %}Manage Comment{% endblock %}
+
+{% block content %}
+{% include 'user/manage_header.html' %}
+<div class="page-header">
+    <h1>Comments
+        <small class="text-muted">{{ pagination.total }}</small>
+    </h1>
+    {% if comments %}
+        <table class="table table-striped">
+            <thead>
+            <tr>
+                <th>No.</th>
+                <th>Author</th>
+                <th>Title</th>
+                <th>Body</th>
+                <th>Date</th>
+                <th>Actions</th>
+            </tr>
+            </thead>
+            {% for comment in comments %}
+            </tr>
+                <td>{{ loop.index + ((pagination.page - 1) * config['BLOG_COMMENT_PER_PAGE']) }}</td>
+                <td>
+                    {{ comment.article.author.username }}<br>
+                        <a href="{{ url_for('user.index',username=current_user.username) }}" target="_blank">
+                        </a><br>
+
+                    {% if comment.article.author == current_user %}
+                        <span class="badge badge-primary">Author</span>
+                    {% endif %}
+                </td>
+                <td>{{ comment.article.title }}</td>
+                <td>{{ comment.body }}</td>
+                <td>{{ moment(comment.timestamp).format('LL') }}</td>
+                <td>
+                    <a class="btn btn-info btn-sm" href="{{ url_for('main.show_article', article_id=comment.article.id) }}">Article</a>
+                    <form class="inline" method="post"
+                          action="{{ url_for('main.delete_comment', comment_id=comment.id, next=request.full_path) }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                        <button type="submit" class="btn btn-danger btn-sm"
+                                onclick="return confirm('Are you sure?');">Delete
+                        </button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+        <div class="page-footer">{{ render_pagination(pagination) }}</div>
+    {% else %}
+        <div class="tip"><h5>No comments.</h5></div>
+    {% endif %}
+{% endblock %}

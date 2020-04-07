@@ -1,0 +1,69 @@
+{% from 'bootstrap/form.html' import  render_field %}
+
+<div class="card bg-light mb-3 w-100">
+    <div class="card-body">
+        <div id="tags">
+            <p>
+                {% if article.tags %}
+                    {% for tag in article.tags %}
+                        <a class="badge badge-light"
+                           href="{{ url_for('.show_tag', tag_id=tag.id) }}" target="_blank"><span
+                                class="oi oi-tag"></span> {{ tag.name }}</a>
+                    {% endfor %}
+                {% endif %}
+                {% if current_user == article.author %}
+                    <a id="tag-btn" href="#!">
+                        <small><span class="oi oi-pencil"></span> edit tag</small>
+                    </a>
+                {% endif %}
+            </p>
+        </div>
+        {% if current_user == article.author %}
+            <!--如果没有js关于tag的hidden和show，<div id="tag-form"> 下面的无法显示，但是id改一下就可以，为什么-->
+            <div id="tag-form">
+                <form action="{{ url_for('.new_tag', article_id=article.id) }}" method="post">
+                    {{ tag_form.csrf_token }}
+                    {{ render_field(tag_form.tag) }}
+                    <a class="btn btn-light btn-sm" id="cancel-tag">Cancel</a>
+                    {{ render_field(tag_form.submit, class='btn btn-success btn-sm') }}
+                </form>
+
+                {% if article.tags %}
+                    <hr>
+                    {% for tag in article.tags %}
+                    <a class="dead-link" href="#!"
+                       data-href="{{ url_for('.delete_tag', article_id=article.id, tag_id=tag.id) }}"
+                       data-toggle="modal" data-target="#confirm-delete" title="Delete tag">
+                        <span class="badge badge-danger">
+                            {{ tag.name }} <span class="oi oi-trash" aria-hidden="true"></span>
+                        </span>
+                    </a>
+                    {% endfor %}
+                {% endif %}
+            </div>
+        {% endif %}
+        {% if current_user.is_authenticated %}
+            {% if current_user.is_collecting(article) %}
+                <form class="inline" method="post"
+                      action="{{ url_for('main.uncollect', article_id=article.id) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-outline-secondary btn-sm">
+                        <span class="oi oi-x"></span> Uncollect
+                    </button>
+                </form>
+            {% else %}
+                <form class="inline" method="post"
+                      action="{{ url_for('main.collect', article_id=article.id) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-outline-primary btn-sm">
+                        <span class="oi oi-star"></span> Collect
+                    </button>
+                </form>
+            {% endif %}
+        {% endif %}
+        {% if article.collectors %}
+            <a href="{{ url_for('main.show_collectors', article_id=article.id) }}">{{ article.collectors|length }}
+                collectors</a>
+        {% endif %}
+    </div>
+</div>

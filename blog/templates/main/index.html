@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% from 'bootstrap/pagination.html' import render_pagination %}
+{% from 'macros.html' import article_card with context %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<div class="row justify-content-md-center">
+	<div class="col-md-8">
+		{% if articles %}
+			{% for article in articles %}
+				{{ article_card(article) }} 
+			{% endfor %}
+		{% else %}
+			<div class="tip text-center">
+				<h3>No trends.</h3>
+			</div>
+		{% endif %}
+	</div>
+	<div class="col-md-3">
+		{% include 'main/_sidebar.html' %}
+	</div>
+</div>
+{% if articles %}
+	{{ render_pagination(pagination, align='center') }}
+{% endif %}
+
+{% endblock %}
